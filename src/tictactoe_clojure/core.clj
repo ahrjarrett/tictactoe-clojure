@@ -77,3 +77,54 @@
 ; PLAYER-SEQUENCE: the cycle function returns an infinitely lazy sequence,
 ; made up of its sequence argument elements repeated ad infinitum.
 (def player-sequence (cycle [:x :o]))
+
+; GET-MOVE: uses Java static method parseInt to parse to string returned from read-line as an Integer.
+; READ-LINE is a function that will block the program until the user enters something into the command-line.
+; We have this function in a try block b/c if the input is not an integer, it will throw an exception.
+(def get-move [board]
+  (let [input (try
+          (. Integer parseInt (read-line))
+          (catch Exception e nil))]
+    (if (some #{input} board)
+        input
+        nil)))
+
+; TAKE-TURN: (impure)
+; ‘player’ as identified by their mark (:x or :o).
+; If the move is valid, the call to ASSOC will take the current state
+; of the board, and at the index (which is 1 less than MOVE),
+; at that index we want to replace the slot number representing the player
+; who made the move. ASSOC returns a modification to the board.
+; The new vector returned by ASSOC gets returned by the IF,
+; and returned the LOOP, which is returned by the function.
+; TAKE-TURN then returns the new state of the board.
+(defn take-turn [player board]
+  (println "Select your move, player" (player-name player) " (press 1-9 and hit enter):")
+  (loop [move (get-move board)]
+    (if move
+      (assoc board (dec move) player)
+      (do
+        (println "Move was invalid. Select your move, player."
+        (recur get-move board))))))
+
+; PLAY-GAME: This is the kick-off function.
+; For the first iteration of loop we bind board to STARTING-BOARD,
+; and player-sequence to PLAYER-SEQUENCE.
+; In each iteration, we are rebnding the board a new state of
+; the board in which case one of the players has taken a turn,
+; and so for each iteration we are using first and rest to cycle
+; through, alternating both players.
+(defn play-game []
+  (loop [board starting-board player-sequence player-sequence]
+    (let [winner (winner? board)]
+      (println "Current board:")
+      (print-board board)
+      (cond
+        winner (println "Player" (player-name winner) "wins!")
+        (full-board? board) (println "Game is a draw.")
+        :else
+          (recur
+            (take-turn (first player-sequence) board)
+            (rest player-sequence))))))
+
+(play-game)
