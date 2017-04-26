@@ -1,3 +1,3 @@
 # tictactoe-clojure
 
-A command-line version of tic-tac-toe implemented in Clojure.
+A command-line tic-tac-toe game implemented in Clojure.
